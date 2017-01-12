@@ -15,8 +15,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class Texture {
-	private static int textureID;
-    private static final int BYTES_PER_PIXEL = 4;//3 for RGB, 4 for RGBA
+	private int textureID;
 	public Texture(String loc){
     	   BufferedImage image = null;
     	   File file = new File("./textures/" + loc);
@@ -35,7 +34,7 @@ public class Texture {
           int[] pixels = new int[image.getWidth() * image.getHeight()];
             image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
 
-            ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * BYTES_PER_PIXEL); //4 for RGBA, 3 for RGB
+            ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * 4); //4 for RGBA, 3 for RGB
 
             for(int y = 0; y < image.getHeight(); y++){
                 for(int x = 0; x < image.getWidth(); x++){
