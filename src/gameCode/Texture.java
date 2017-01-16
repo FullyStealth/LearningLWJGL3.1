@@ -67,6 +67,10 @@ public class Texture {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
             glBindTexture(GL_TEXTURE_2D, 0);
        }
+	protected void finalize() throws Throwable{
+		glDeleteTextures(textureID);
+		super.finalize();
+	}
        public void bind(int sampler){
     	   if(sampler >= 0 && sampler <= 31){
     		   	glActiveTexture(GL_TEXTURE0 + sampler);

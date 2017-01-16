@@ -3,10 +3,11 @@ package gameCode;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
+import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
 
+import collision.AABB;
+import entity.Player;
 import World.Tile;
 import World.TileRenderer;
 import World.World;
@@ -15,6 +16,7 @@ public class Main {
 	
 	public Main(){
 		Window.setCallback();
+		
 		if(!glfwInit()){
 			System.err.println("GLFW could not initialise");
 			System.exit(1);
@@ -29,40 +31,20 @@ public class Main {
 		
 		GL.createCapabilities();
 		
-		Texture tex = new Texture("ColoredSmiley.png");
-		
 		Camera camera = new Camera(window.getWidth(), window.getHeight());
 		
 		glEnable(GL_TEXTURE_2D);
 		
 		TileRenderer tiles = new TileRenderer();
 		
-//		float[] vertices = new float[]{
-//				-0.5f, 0.5f, 0,
-//				0.5f, 0.5f, 0,
-//				0.5f, -0.5f, 0,
-//				-0.5f, -0.5f, 0,
-//		};
-		
-//		float[] texture = new float[]{
-//			0,0,
-//			1,0,
-//			1,1,
-//			0,1,
-//		};
-		
-//		int[] indeces = new int[]{
-//			0,1,2,
-//			2,3,0
-//		};
-		
-//		Model model = new Model(vertices, texture, indeces);
-		
 		Shader shader = new Shader("shader");
 
 		World world = new World();
 		
-		world.setTile(Tile.test2, 0, 0);
+		Player player = new Player();
+		
+		world.setTile(Tile.test2, 5, 0);
+		world.setTile(Tile.test2, 6, 0);
 		
 		glClearColor(0,0,0,0);
 		
@@ -89,18 +71,10 @@ public class Main {
 				if(window.getInput().isKeyPressed(GLFW_KEY_ESCAPE)){
 					glfwSetWindowShouldClose(window.getWindow(), true);
 				}
-				if(window.getInput().isKeyDown(GLFW_KEY_W)){
-					camera.getPosition().sub(new Vector3f(0,5,0));
-				}
-				if(window.getInput().isKeyDown(GLFW_KEY_A)){
-					camera.getPosition().sub(new Vector3f(-5,0,0));
-				}
-				if(window.getInput().isKeyDown(GLFW_KEY_S)){
-					camera.getPosition().sub(new Vector3f(0,-5,0));
-				}
-				if(window.getInput().isKeyDown(GLFW_KEY_D)){
-					camera.getPosition().sub(new Vector3f(5,0,0));
-				}
+				
+				player.update((float)frame_cap, window, camera, world);
+				
+				world.correctCamera(camera, window);
 				window.update();
 				if(frame_time >= 1.0){
 					frame_time = 0;
@@ -115,8 +89,10 @@ public class Main {
 //				shader.setUniform("sampler", 0);
 //				shader.setUniform("projection", camera.getProjection().mul(target));
 //				model.render();
+
+				world.render(tiles, shader, camera, window);
 				
-				world.render(tiles, shader, camera);
+				player.render(shader, camera);
 				
 				window.swapBuffers();
 				frames++;
