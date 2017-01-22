@@ -18,7 +18,13 @@ public class Texture {
 	private int textureID;
 	public Texture(String loc){
     	   BufferedImage image = null;
-    	   FileInputStream fis = prepareFile("./textures/" + loc);
+    	   File file = new File("./textures/" + loc);
+    	   FileInputStream fis = null;
+    	   try {
+    		   fis = new FileInputStream(file);
+    	   } catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+    	   }
            try {
         	   image = ImageIO.read(fis);
            } catch (IOException e) {
@@ -61,16 +67,6 @@ public class Texture {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
             glBindTexture(GL_TEXTURE_2D, 0);
        }
-	public static FileInputStream prepareFile(String loc){
-		File file = new File(loc);
-		FileInputStream fis = null;
-		try {
-			fis = new FileInputStream(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		return fis;
-	}
 	protected void finalize() throws Throwable{
 		glDeleteTextures(textureID);
 		super.finalize();

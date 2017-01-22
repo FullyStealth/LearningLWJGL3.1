@@ -7,9 +7,7 @@ import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
 
 import collision.AABB;
-import entity.Entity;
 import entity.Player;
-import entity.Transform;
 import World.Tile;
 import World.TileRenderer;
 import World.World;
@@ -39,13 +37,14 @@ public class Main {
 		
 		TileRenderer tiles = new TileRenderer();
 		
-		Entity.initAsset();
-		
 		Shader shader = new Shader("shader");
 
-		World world = new World("tiles");
+		World world = new World();
 		
-
+		Player player = new Player();
+		
+		world.setTile(Tile.test2, 5, 0);
+		world.setTile(Tile.test2, 6, 0);
 		
 		glClearColor(0,0,0,0);
 		
@@ -73,7 +72,7 @@ public class Main {
 					glfwSetWindowShouldClose(window.getWindow(), true);
 				}
 				
-				world.update((float)frame_cap, window, camera);
+				player.update((float)frame_cap, window, camera, world);
 				
 				world.correctCamera(camera, window);
 				window.update();
@@ -93,11 +92,12 @@ public class Main {
 
 				world.render(tiles, shader, camera, window);
 				
+				player.render(shader, camera);
+				
 				window.swapBuffers();
 				frames++;
 			}
 		}
-		Entity.deleteAsset();
 		glfwTerminate();
 	}
 	public static void main(String[] args) {
