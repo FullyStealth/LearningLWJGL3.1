@@ -19,17 +19,27 @@ public abstract class Entity {
 	private static Model model;
 	protected AABB bounding_box;
 //	private Texture texture;
-	protected Animation texture;
+	protected Animation[] animations;
+	private int use_animation;
+	
 	protected Transform transform;
 	
-	public Entity(Animation animation, Transform transform) {
+	public Entity(int max_animation, Transform transform) {
 		
-		this.texture = animation;
+		this.animations = new Animation[max_animation];
 		
 		this.transform = transform;
-		
+		this.use_animation = 0;
 		
 		bounding_box = new AABB(new Vector2f(transform.pos.x, transform.pos.y), new Vector2f(transform.scale.x, transform.scale.y));
+	}
+	
+	protected void setAnimation(int index, Animation animation){
+		animations[index] = animation;
+	}
+	
+	public void useAnimation(int index){
+		this.use_animation = index;
 	}
 	
 	public void move(Vector2f direction){
@@ -98,7 +108,7 @@ public abstract class Entity {
 		shader.bind();
 		shader.setUniform("sampler", 0);
 		shader.setUniform("projection", transform.getProjection(target));
-		texture.bind(0);
+		animations[use_animation].bind(0);
 		model.render();
 	}
 	public static void initAsset(){
@@ -124,6 +134,21 @@ public abstract class Entity {
 	}
 	public static void deleteAsset(){
 		model = null;
+	}
+
+	public void collideWithEntity(Entity entity) {
+		Collision collision = bounding_box.getCollision(entity.bounding_box);
+		
+		if(collision.isIntersecting){
+			collision.distance.x /= 2;
+			collision.distance.y /= 2;
+			
+			bounding_box.correctPosition(entity.bounding_box, collision);
+			transform.pos.set(bounding_box.getCenter().x, bounding_box.getCenter().y, 0);
+			
+			entity.bounding_box.correctPosition(bounding_box, collision);
+			entity.transform.pos.set(entity.bounding_box.getCenter().x, entity.bounding_box.getCenter().y, 0);
+		}
 	}
 
 }

@@ -15,7 +15,6 @@ import collision.AABB;
 import entity.Entity;
 import entity.Player;
 import entity.Transform;
-import gameCode.Animation;
 import gameCode.Camera;
 import gameCode.Shader;
 import gameCode.Texture;
@@ -32,10 +31,10 @@ public class World {
 	
 	private Matrix4f world;
 	
-	public World(String world){
+	public World(String world, Camera camera){
 		try {
-			BufferedImage tile_sheet = ImageIO.read(Texture.prepareFile("./worlds/" + world + ".png"));
-			//BufferedImage entity_sheet = ImageIO.read(Texture.prepareFile("./worlds/" + world + "_entity.png"));
+			BufferedImage tile_sheet = ImageIO.read(Texture.prepareFile("./worlds/" + world + "/tiles.png"));
+			BufferedImage entity_sheet = ImageIO.read(Texture.prepareFile("./worlds/" + world + "/entities.png"));
 			
 			width = tile_sheet.getHeight();
 			height = tile_sheet.getWidth();
@@ -45,14 +44,19 @@ public class World {
 			this.world.scale(scale);
 			
 			int[] colorTileSheet = tile_sheet.getRGB(0,0,width,height,null,0,width);
+			int[] colorEntitySheet = entity_sheet.getRGB(0, 0, width, height, null, 0, width);
 			
 			tiles = new byte[width * height];
 			bounding_boxes = new AABB[width * height];
 			entities = new ArrayList<Entity>();
 			
+			Transform transform;
+			
 			for(int y = 0; y < height; y++){
 				for(int x = 0; x < width; x++){
 					int red = (colorTileSheet[x + y * width] >> 16) & 0xff;
+					int entity_index = (colorEntitySheet[x + y * width] >> 16) & 0xFF;
+					int entity_alpha = (colorEntitySheet[x + y * width] >> 24) & 0xFF;
 					
 					Tile t;
 					try{
@@ -64,25 +68,52 @@ public class World {
 					if(t != null){
 						setTile(t, x, y);
 					}
-					
+					if(entity_alpha > 0){
+						transform = new Transform();
+						transform.pos.x = x*2;
+						transform.pos.y = -y*2;
+						switch(entity_index){
+						case 1:
+							Player player = new Player(transform);
+							entities.add(player);
+							camera.getPosition().set(transform.pos.mul(-scale, new Vector3f()));
+							break;
+						default:
+							break;
+						}
+					}
 				}
 			}
-			entities.add(new Player(new Transform()));
+/*			entities.add(new Player(new Transform()));
 			
 			Transform t = new Transform();
-			t.pos.x = 0;
-			t.pos.y = -4;
+	 		t.pos.x = 0;
+	 		t.pos.y = -4;
 			
-			entities.add(new Entity(new Animation(1,1,"an"), t){
+			entities.add(new Entity(new Animation(5,15,"anim"), t){
 				@Override
 				public void update(float delta, Window window, Camera camera,
 						World world) {
-					move(new Vector2f(5*delta, 0));
+					Vector2f movement = new Vector2f();
+					
+					if(window.getInput().isKeyDown(GLFW_KEY_UP)){
+						movement.add(0,10*delta);
+					}
+					if(window.getInput().isKeyDown(GLFW_KEY_LEFT)){
+						movement.add(-10*delta,0);
+					}
+					if(window.getInput().isKeyDown(GLFW_KEY_DOWN)){
+						movement.add(0,-10*delta);
+					}
+					if(window.getInput().isKeyDown(GLFW_KEY_RIGHT)){
+						movement.add(10*delta,0);
+					}
+					move(movement);
 
 				}
 			}
 			);
-			
+*/			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -125,6 +156,9 @@ public class World {
 			entities.update(delta, window, camera, this);
 		}
 		for(int i = 0; i < entities.size(); i++){
+			for(int j = i + 1; j < entities.size(); j++){
+				entities.get(i).collideWithEntity(entities.get(j));
+			}
 			entities.get(i).collideWithTiles(this);
 		}
 	}
