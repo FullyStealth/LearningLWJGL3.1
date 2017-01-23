@@ -5,7 +5,9 @@ import static org.lwjgl.opengl.GL11.*;
 
 import org.lwjgl.opengl.*;
 
+import assets.Assets;
 import entity.Entity;
+import gui.Gui;
 import World.TileRenderer;
 import World.World;
 
@@ -39,13 +41,14 @@ public class Main {
 
 		TileRenderer tiles = new TileRenderer();
 
-		Entity.initAsset();
+		Assets.initAsset();
 
 		Shader shader = new Shader("shader");
 
 		World world = new World("test_world", camera);
+		world.calculateView(window);
 
-
+		Gui gui = new Gui(window);
 
 		glClearColor(0,0,0,0);
 
@@ -67,6 +70,13 @@ public class Main {
 			time = time_2;
 
 			while(unprocessed >= frame_cap){
+				if(window.hasResized()){
+					camera.setProjection(window.getWidth(), window.getHeight());
+					gui.resizeCamera(window);
+					world.calculateView(window);
+					glViewport(0,0,window.getWidth(), window.getHeight());
+				}
+				
 				unprocessed -= frame_cap;
 				can_render = true;
 				if(window.getInput().isKeyPressed(GLFW_KEY_ESCAPE)){
@@ -91,13 +101,15 @@ public class Main {
 				//				shader.setUniform("projection", camera.getProjection().mul(target));
 				//				model.render();
 
-				world.render(tiles, shader, camera, window);
+				world.render(tiles, shader, camera);
 
+				gui.Render();
+				
 				window.swapBuffers();
 				frames++;
 			}
 		}
-		Entity.deleteAsset();
+		Assets.deleteAsset();
 		glfwTerminate();
 	}
 	public static void main(String[] args) {

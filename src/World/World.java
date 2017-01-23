@@ -21,7 +21,8 @@ import gameCode.Texture;
 import gameCode.Window;
 
 public class World {
-	private final int view = 24;
+	private int viewX;
+	private int viewY;
 	private byte[] tiles;
 	private AABB[] bounding_boxes;
 	private List<Entity> entities;
@@ -130,20 +131,23 @@ public class World {
 		world = new Matrix4f().setTranslation(new Vector3f(0));
 		world.scale(scale);
 	}
-	
+	public void calculateView(Window window){
+		viewX = (window.getWidth()/(scale * 2)) + 4;
+		viewY = (window.getHeight()/(scale * 2)) + 4;
+	}
 	public Matrix4f getWorldMatrix(){
 		return world;
 	}
 	
-	public void render(TileRenderer render, Shader shader, Camera camera, Window window){
-		int posX = ((int)camera.getPosition().x + (window.getWidth()/2))/(scale * 2);
-		int posY = ((int)camera.getPosition().y - (window.getHeight()/2))/(scale * 2);
+	public void render(TileRenderer render, Shader shader, Camera camera){
+		int posX = (int)camera.getPosition().x / (scale * 2);
+		int posY = (int)camera.getPosition().y / (scale * 2);
 		
-		for(int i = 0; i < view; i++){
-			for(int j = 0; j < view; j++){
-				Tile t = getTile(i-posX, j+posY);
+		for(int i = 0; i < viewX; i++){
+			for(int j = 0; j < viewY; j++){
+				Tile t = getTile(i-posX-(viewX/2) + 1, j+posY-(viewY/2));
 				if(t != null){
-					render.renderTile(t, i-posX, -j-posY, shader, world, camera);
+					render.renderTile(t, i-posX-(viewX/2) + 1, -j-posY+(viewY/2), shader, world, camera);
 				}
 			}
 		}

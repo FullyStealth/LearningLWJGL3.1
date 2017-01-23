@@ -10,13 +10,13 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+import assets.Assets;
 import World.World;
 import collision.AABB;
 import collision.Collision;
 
 public abstract class Entity {
 
-	private static Model model;
 	protected AABB bounding_box;
 //	private Texture texture;
 	protected Animation[] animations;
@@ -109,33 +109,8 @@ public abstract class Entity {
 		shader.setUniform("sampler", 0);
 		shader.setUniform("projection", transform.getProjection(target));
 		animations[use_animation].bind(0);
-		model.render();
+		Assets.getModel().render();
 	}
-	public static void initAsset(){
-		float[] vertices = new float[]{
-				-1f, 1f, 0,
-				1f, 1f, 0,
-				1f, -1f, 0,
-				-1f, -1f, 0,
-		};
-		
-		float[] texture = new float[]{
-			0,0,
-			1,0,
-			1,1,
-			0,1,
-		};
-		
-		int[] indeces = new int[]{
-			0,1,2,
-			2,3,0
-		};
-		model = new Model(vertices, texture, indeces);
-	}
-	public static void deleteAsset(){
-		model = null;
-	}
-
 	public void collideWithEntity(Entity entity) {
 		Collision collision = bounding_box.getCollision(entity.bounding_box);
 		
